@@ -4,7 +4,7 @@ from django.db import connection
 
 
 def db_heavy(request):
-    # 일부러 DB 쿼리 여러 번 발생
+    # Intentionally generate multiple DB queries
     with connection.cursor() as cur:
         for _ in range(30):
             cur.execute("SELECT 1")
@@ -14,7 +14,7 @@ def db_heavy(request):
 
 
 def app_heavy(request):
-    # 일부러 CPU 바쁘게 만들기 (WAS 시간 증가)
+    # Intentionally consume CPU time (simulate app bottleneck)
     start = perf_counter()
     while perf_counter() - start < 0.05:  # 50ms
         pass
