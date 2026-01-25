@@ -1,1 +1,0 @@
-default_app_config = "django_xbench.apps.DjangoXBenchConfig"

@@ -30,17 +30,23 @@ class XBenchMiddleware:
             q_count = db_queries_ctx.get()
             app_time = max(0.0, total - db_time)
 
-            # ---- Server-Timing 헤더 ----
-            response["Server-Timing"] = (
+            # ---- Server-Timing header ----
+            existing = response.get("Server-Timing")
+
+            mine = (
                 f"total;dur={total*1000:.3f}, "
                 f"db;dur={db_time*1000:.3f}, "
                 f"app;dur={app_time*1000:.3f}"
             )
 
-            # ---- 쿼리 개수 헤더 (추천) ----
+            response["Server-Timing"] = f"{existing}, {mine}" if existing else mine
+
+
+            # ---- Query count header (recommended) ----
             response["X-Bench-Queries"] = str(q_count)
 
-            # ---- 로그 옵션 ----
+
+            # ---- Log Option ----
             if XBENCH_LOG_ENABLED:
                 msg = (
                     f"[XBENCH] {request.method} {request.path} | "
