@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-xbench"
+version = "0.1.0"
+description = "Django middleware that measures request time breakdown (total/db/app) and query count using execute_wrapper."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Kim Yeongbin" }]
+keywords = ["django", "performance", "profiling", "instrumentation"]
+classifiers = [
+  "Framework :: Django",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "Django>=3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/yeongbin05/django-xbench"
+Issues = "https://github.com/yeongbin05/django-xbench/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-django>=4.8",
+  "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
