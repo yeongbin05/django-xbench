@@ -1,22 +1,18 @@
-from time import perf_counter
+from time import sleep
 from django.http import JsonResponse
-from django.db import connection
+from django.db import connections
 
 
 def db_heavy(request):
-    # Intentionally generate multiple DB queries
-    with connection.cursor() as cur:
+    # Demo: deterministic DB workload (expected_queries=30)
+    with connections["default"].cursor() as cur:
         for _ in range(30):
             cur.execute("SELECT 1")
             cur.fetchone()
-
-    return JsonResponse({"ok": True, "type": "db-heavy"})
+    return JsonResponse({"ok": True, "type": "db-heavy", "expected_queries": 30})
 
 
 def app_heavy(request):
-    # Intentionally consume CPU time (simulate app bottleneck)
-    start = perf_counter()
-    while perf_counter() - start < 0.05:  # 50ms
-        pass
-
-    return JsonResponse({"ok": True, "type": "app-heavy"})
+    # Demo: deterministic non-DB latency (expected_queries=0)
+    sleep(0.05)
+    return JsonResponse({"ok": True, "type": "app-heavy", "expected_queries": 0})

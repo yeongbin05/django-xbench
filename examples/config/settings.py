@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'demo', 
+    'examples.demo', 
 ]
 
 MIDDLEWARE = [
@@ -51,7 +51,8 @@ MIDDLEWARE = [
     'django_xbench.middleware.XBenchMiddleware',
 ]
 
-ROOT_URLCONF = 'example.urls'
+ROOT_URLCONF = "examples.config.urls"
+
 
 TEMPLATES = [
     {
@@ -68,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'example.wsgi.application'
+WSGI_APPLICATION = "examples.config.wsgi.application"
 
 
 # Database
@@ -123,8 +124,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-XBENCH_LOG_ENABLED = True
+XBENCH_ENABLED = True
+XBENCH_LOG_ENABLED = False
 XBENCH_LOG_LEVEL = "info"
 
 LOGGING = {
