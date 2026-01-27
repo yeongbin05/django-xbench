@@ -1,3 +1,5 @@
+![CI](https://github.com/yeongbin05/django-xbench/actions/workflows/ci.yml/badge.svg)
+
 # django-xbench
 
 Here's how django-xbench exposes request timing breakdown using the Server-Timing header:
@@ -157,7 +159,7 @@ curl -I http://127.0.0.1:8000/admin/login/
 ## Compatibility
 
 - Python: 3.9+
-- Django: 3.2+ (tested on Django 5.2.x)
+- Django: 3.2+ (tested on 5.2)
 
 
 ## Roadmap
@@ -165,7 +167,6 @@ curl -I http://127.0.0.1:8000/admin/login/
 - [ ] DRF serialization time breakdown (view/serializer timing)
 - [ ] More robust `Server-Timing` merging (preserve existing metrics)
 - [ ] Docs: real-world examples (N+1 detection demo endpoints)
-- [ ] CI (GitHub Actions) for tests & release
 
 ## Contributing
 
