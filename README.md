@@ -4,13 +4,24 @@
 
 # django-xbench
 
-Here's how django-xbench exposes request timing breakdown using the Server-Timing header:
-![Server Timing Preview](https://raw.githubusercontent.com/yeongbin05/django-xbench/master/docs/server-timing.PNG)
+> Lightweight Django middleware for APM-style request profiling  
+> Measure DB vs App time and query count with near-zero configuration.
 
-Measure Django request time breakdown (**total / db / app**) and query count with minimal setup.  
-Adds `Server-Timing` and `X-Bench-Queries` headers and optionally logs per-request metrics.
+### Why django-xbench?
+
+- 🔍 Instantly see where time is spent (DB vs Python/Serialization)
+- 🚀 No heavy APM agent, no SaaS dependency
+- 🧩 One-line middleware integration
+- 📊 Works in production (Server-Timing header based)
 
 > Goal: make performance debugging “visible” (DB vs app/serialization) without heavyweight APM.
+
+Here's how django-xbench exposes request timing breakdown using the Server-Timing header:
+
+![Server Timing Preview](https://raw.githubusercontent.com/yeongbin05/django-xbench/master/docs/server-timing.PNG)
+ 
+Adds `Server-Timing` and `X-Bench-Queries` headers and optionally logs per-request metrics.
+
 
 ## Features
 
