@@ -1,5 +1,8 @@
 # django-xbench
 
+Here's how django-xbench exposes request timing breakdown using the Server-Timing header:
+![Server Timing Preview](https://raw.githubusercontent.com/yeongbin05/django-xbench/master/docs/server-timing.PNG)
+
 Measure Django request time breakdown (**total / db / app**) and query count with minimal setup.  
 Adds `Server-Timing` and `X-Bench-Queries` headers and optionally logs per-request metrics.
 
@@ -11,55 +14,62 @@ Adds `Server-Timing` and `X-Bench-Queries` headers and optionally logs per-reque
 - ✅ Calculates app time (= total - db)
 - ✅ Counts DB queries
 - ✅ Adds response headers:
-  - `Server-Timing: total;dur=..., db;dur=..., app;dur=...`
+  - `Server-Timing: xbench-total;dur=..., xbench-db;dur=..., xbench-app;dur=...`
   - `X-Bench-Queries: <int>`
 - ✅ Optional logging:
-  - `[XBENCH] GET /path | total=...ms db=...ms app=...ms q=...`
+  - `[XBENCH] GET /path | xbench_total=...ms xbench_db=...ms xbench_app=...ms q=...`
 - ✅ Tested with `pytest` + `pytest-django`
 
 ## Installation
 
-> **(WIP)** Once published on PyPI:
 
 ```bash
 pip install django-xbench
 ```
 
-For local development:
+For local development (recommended):
 
 ```bash
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Quickstart
 
-1) Add middleware in `settings.py`:
+1) Add middleware in your `settings.py`:
 
 ```py
 MIDDLEWARE = [
-    # ...
+    # Recommended: place near the top to approximate end-to-end server time
+    # (includes other middleware overhead).
     "django_xbench.middleware.XBenchMiddleware",
+
+    # ... other middleware ...
+
+    # Optional: place near the bottom to focus on view/serializer/template time.
+    # (Excludes middleware above XBench; includes anything below it.)
 ]
+
 ```
 
-2) Run server and hit any endpoint:
+2) Run your server and hit any endpoint:
 
+**In your project:**
 ```bash
 python manage.py runserver
-curl -I http://localhost:8000/<your-endpoint>/
-```
+curl -I http://127.0.0.1:8000/<your-endpoint>/
 
+```
+**In this repo (demo):**
+```bash
+python -m examples.manage runserver
+curl -I http://127.0.0.1:8000/db-heavy/
+```
 You should see headers similar to:
 
 ```text
-Server-Timing: total;dur=12.345, db;dur=1.234, app;dur=11.111
+Server-Timing: xbench-total;dur=12.345, xbench-db;dur=1.234, xbench-app;dur=11.111
 X-Bench-Queries: 3
 ```
-
-### Note about `/db/` in tests
-
-`/db/` is **test-only** (temporary URLConf inside pytest) and does not exist in the demo server.  
-Use your real endpoint (e.g. `db-heavy`, `admin/login/`, etc.) when testing with `curl`.
 
 ## Output
 
@@ -68,14 +78,16 @@ Use your real endpoint (e.g. `db-heavy`, `admin/login/`, etc.) when testing with
 Example:
 
 ```text
-Server-Timing: total;dur=52.300, db;dur=14.100, app;dur=38.200
+Server-Timing: xbench-total;dur=52.300, xbench-db;dur=14.100, xbench-app;dur=38.200
 ```
 
-- `total`: whole request duration
-- `db`: total DB time measured by wrapper
-- `app`: `max(0, total - db)` (serialization/template/python time etc.)
+- `xbench-total`: whole request duration
+- `xbench-db`: total DB time measured by wrapper
+- `xbench-app`: `max(0, total - db)` (serialization/template/python time etc.)
 
-You can inspect this in Chrome DevTools → Network → (select request) → Timing.
+You can inspect this in Chrome DevTools → Network → Timing  
+(or any browser that supports the Server-Timing spec).
+
 
 ### Query count header
 
@@ -85,10 +97,13 @@ X-Bench-Queries: 5
 
 ## Configuration
 
-Environment variables (or settings) used:
+You can configure XBench via `settings.py` or Environment Variables.
 
-- `XBENCH_LOG_ENABLED` (default: `false`)
-- `XBENCH_LOG_LEVEL` (default: `info`, allowed: `debug` / `info`)
+**settings.py:**
+```python
+XBENCH_LOG_ENABLED = True
+XBENCH_LOG_LEVEL = "debug"  # default: "info"
+```
 
 Example (Windows):
 
@@ -112,32 +127,45 @@ export XBENCH_LOG_LEVEL=debug
 pytest
 ```
 
+> Note: this repo includes a bundled `examples/` Django project used by `pytest-django`.
+> The provided `pytest.ini` config sets `pythonpath = .` so `examples` can be imported reliably.
+
 If you want to see logs while testing:
 
 ```bash
 pytest -s
 ```
 
-### Demo project
+### Demo project (bundled)
 
-This repository includes an `example/` Django project for manual testing.
+This repository includes an `examples/` Django project for manual testing.
+
+Run it from the repository root:
 
 ```bash
-cd example
-python manage.py runserver
+python -m examples.manage runserver
+```
+
+Try a few endpoints:
+
+```bash
+curl -I http://127.0.0.1:8000/db-heavy/
+curl -I http://127.0.0.1:8000/app-heavy/
+curl -I http://127.0.0.1:8000/admin/login/
 ```
 
 ## Compatibility
 
-- Python: 3.10+
-- Django: 4.x / 5.x (tested on Django 5.2.x)
+- Python: 3.9+
+- Django: 3.2+ (tested on Django 5.2.x)
+
 
 ## Roadmap
 
 - [ ] DRF serialization time breakdown (view/serializer timing)
 - [ ] More robust `Server-Timing` merging (preserve existing metrics)
 - [ ] Docs: real-world examples (N+1 detection demo endpoints)
-- [ ] CI (GitHub Actions) + PyPI release
+- [ ] CI (GitHub Actions) for tests & release
 
 ## Contributing
 
