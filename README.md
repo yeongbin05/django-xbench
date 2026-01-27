@@ -130,7 +130,7 @@ pytest
 ```
 
 > Note: this repo includes a bundled `examples/` Django project used by `pytest-django`.
-> The provided `pytest.ini` config sets `pythonpath = .` so `examples` can be imported reliably.
+> In CI, we set `PYTHONPATH=examples` to ensure `examples.config.settings` can be imported reliably.
 
 If you want to see logs while testing:
 
