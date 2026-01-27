@@ -29,5 +29,6 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: examples
+          DJANGO_SECRET_KEY: "test-secret-key"
         run: |
           pytest
