@@ -5,7 +5,7 @@ import logging
 
 from .context import db_duration_ctx, db_queries_ctx
 from .db import instrument_cursor
-from .conf import XBENCH_LOG_ENABLED, XBENCH_LOG_LEVEL
+from .conf import XBENCH_ENABLED, XBENCH_LOG_ENABLED, XBENCH_LOG_LEVEL
 
 logger = logging.getLogger("django_xbench")
 
@@ -15,8 +15,12 @@ class XBenchMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        token_dur = db_duration_ctx.set(0.0)
-        token_q = db_queries_ctx.set(0)
+        # ✅ 전체 OFF 스위치 (가장 위에서 바로 탈출)
+        if not XBENCH_ENABLED:
+            return self.get_response(request)
+
+        db_duration_token = db_duration_ctx.set(0.0)
+        db_queries_token = db_queries_ctx.set(0)
         start = perf_counter()
 
         try:
@@ -27,36 +31,34 @@ class XBenchMiddleware:
 
             total = perf_counter() - start
             db_time = db_duration_ctx.get()
-            q_count = db_queries_ctx.get()
+            query_count = db_queries_ctx.get()
             app_time = max(0.0, total - db_time)
 
-            # ---- Server-Timing header ----
-            existing = response.get("Server-Timing")
+            current_timing = response.get("Server-Timing")
 
-            mine = (
-                f"total;dur={total*1000:.3f}, "
-                f"db;dur={db_time*1000:.3f}, "
-                f"app;dur={app_time*1000:.3f}"
-            )
+            metrics = [
+                f"xbench-total;dur={total*1000:.3f}",
+                f"xbench-db;dur={db_time*1000:.3f}",
+                f"xbench-app;dur={app_time*1000:.3f}",
+            ]
+            xbench_metrics = ", ".join(metrics)
 
-            response["Server-Timing"] = f"{existing}, {mine}" if existing else mine
+            if current_timing:
+                current_timing = current_timing.strip().strip(",")
+                response["Server-Timing"] = f"{current_timing}, {xbench_metrics}"
+            else:
+                response["Server-Timing"] = xbench_metrics
+            response["X-Bench-Queries"] = str(query_count)
 
-
-            # ---- Query count header (recommended) ----
-            response["X-Bench-Queries"] = str(q_count)
-
-
-            # ---- Log Option ----
             if XBENCH_LOG_ENABLED:
                 msg = (
                     f"[XBENCH] {request.method} {request.path} | "
-                    f"total={total*1000:.3f}ms "
-                    f"db={db_time*1000:.3f}ms "
-                    f"app={app_time*1000:.3f}ms "
-                    f"q={q_count}"
+                    f"xbench_total={total*1000:.3f}ms "
+                    f"xbench_db={db_time*1000:.3f}ms "
+                    f"xbench_app={app_time*1000:.3f}ms "
+                    f"q={query_count}"
                 )
-
-                if XBENCH_LOG_LEVEL == "debug":
+                if str(XBENCH_LOG_LEVEL).lower() == "debug":
                     logger.debug(msg)
                 else:
                     logger.info(msg)
@@ -64,5 +66,5 @@ class XBenchMiddleware:
             return response
 
         finally:
-            db_duration_ctx.reset(token_dur)
-            db_queries_ctx.reset(token_q)
+            db_duration_ctx.reset(db_duration_token)
+            db_queries_ctx.reset(db_queries_token)
