@@ -15,7 +15,6 @@ class XBenchMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # ✅ 전체 OFF 스위치 (가장 위에서 바로 탈출)
         if not XBENCH_ENABLED:
             return self.get_response(request)
 
