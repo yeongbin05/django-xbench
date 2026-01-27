@@ -1,4 +1,6 @@
 ![CI](https://github.com/yeongbin05/django-xbench/actions/workflows/ci.yml/badge.svg)
+![PyPI](https://img.shields.io/pypi/v/django-xbench)
+
 
 # django-xbench
 
