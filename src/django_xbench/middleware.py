@@ -1,11 +1,19 @@
 from time import perf_counter
 from contextlib import ExitStack
-from django.db import connections
 import logging
+
+from django.db import connections
+from django.urls import resolve, Resolver404
 
 from .context import db_duration_ctx, db_queries_ctx
 from .db import instrument_cursor
-from .conf import XBENCH_ENABLED, XBENCH_LOG_ENABLED, XBENCH_LOG_LEVEL
+from .slowagg import WINDOW
+from .conf import (
+    XBENCH_ENABLED,
+    XBENCH_LOG_ENABLED,
+    XBENCH_LOG_LEVEL,
+    XBENCH_SLOW_AGG_ENABLED,
+)
 
 logger = logging.getLogger("django_xbench")
 
@@ -33,12 +41,26 @@ class XBenchMiddleware:
             query_count = db_queries_ctx.get()
             app_time = max(0.0, total - db_time)
 
-            current_timing = response.get("Server-Timing")
+            if XBENCH_SLOW_AGG_ENABLED:
+                path = request.path_info.lstrip("/")
+                if not (path.startswith("__xbench__/") or path.startswith(".well-known/")):
+                    try:
+                        match = resolve(request.path_info)
+                        endpoint_key = match.route or request.path_info
+                    except Resolver404:
+                        endpoint_key = request.path_info
 
+                    WINDOW.update(
+                        endpoint_key,
+                        duration_s=total,
+                        db_s=db_time,
+                        query_count=query_count,
+                    )
+            current_timing = response.get("Server-Timing")
             metrics = [
-                f"xbench-total;dur={total*1000:.3f}",
-                f"xbench-db;dur={db_time*1000:.3f}",
-                f"xbench-app;dur={app_time*1000:.3f}",
+                f"xbench-total;dur={total * 1000:.3f}",
+                f"xbench-db;dur={db_time * 1000:.3f}",
+                f"xbench-app;dur={app_time * 1000:.3f}",
             ]
             xbench_metrics = ", ".join(metrics)
 
@@ -47,17 +69,18 @@ class XBenchMiddleware:
                 response["Server-Timing"] = f"{current_timing}, {xbench_metrics}"
             else:
                 response["Server-Timing"] = xbench_metrics
+
             response["X-Bench-Queries"] = str(query_count)
 
             if XBENCH_LOG_ENABLED:
                 msg = (
                     f"[XBENCH] {request.method} {request.path} | "
-                    f"xbench_total={total*1000:.3f}ms "
-                    f"xbench_db={db_time*1000:.3f}ms "
-                    f"xbench_app={app_time*1000:.3f}ms "
+                    f"xbench_total={total * 1000:.3f}ms "
+                    f"xbench_db={db_time * 1000:.3f}ms "
+                    f"xbench_app={app_time * 1000:.3f}ms "
                     f"q={query_count}"
                 )
-                if str(XBENCH_LOG_LEVEL).lower() == "debug":
+                if XBENCH_LOG_LEVEL == "debug":
                     logger.debug(msg)
                 else:
                     logger.info(msg)

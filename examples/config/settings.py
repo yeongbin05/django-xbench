@@ -126,9 +126,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-XBENCH_ENABLED = True
-XBENCH_LOG_ENABLED = False
-XBENCH_LOG_LEVEL = "info"
 
 LOGGING = {
     "version": 1,
@@ -143,4 +140,9 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+XBENCH = {
+    "ENABLED": True,
+    "SLOW_AGG": True,
 }
