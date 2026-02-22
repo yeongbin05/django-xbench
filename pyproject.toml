@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-xbench"
-version = "0.1.5"
+version = "0.1.6"
 description = "Django middleware that measures request time breakdown (total/db/app) and query count using execute_wrapper."
 readme = "README.md"
 requires-python = ">=3.9"
