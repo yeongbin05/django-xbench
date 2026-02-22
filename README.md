@@ -17,9 +17,9 @@
 
 Here's how django-xbench exposes request timing breakdown using the Server-Timing header:
 
-![Server Timing Preview](docs/server-timing.PNG)
+![Server Timing Preview](https://raw.githubusercontent.com/yeongbin05/django-xbench/master/docs/server-timing.PNG)
 
-![Slow Endpoints Dashboard](docs/slow-endpoints.PNG)
+![Slow Endpoints Dashboard](https://raw.githubusercontent.com/yeongbin05/django-xbench/master/docs/slow-endpoints.PNG)
 
 Adds `Server-Timing` and `X-Bench-Queries` headers and optionally logs per-request metrics.
 

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Dict, Any
+from .compat import dataclass_slots
 
-
-@dataclass(slots=True)
+@dataclass_slots()
 class EndpointStats:
     """
     Aggregated performance statistics for a single endpoint.

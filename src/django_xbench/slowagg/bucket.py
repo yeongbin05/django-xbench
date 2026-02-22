@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Dict, Iterable, Tuple
-
+from .compat import dataclass_slots
 from .stats import EndpointStats
 
 
@@ -10,7 +10,7 @@ DEFAULT_ENDPOINT_CAP = 200
 OTHER_KEY = "__other__"
 
 
-@dataclass(slots=True)
+dataclass_slots
 class Bucket:
     """
     A single time bucket holding per-endpoint aggregated stats.

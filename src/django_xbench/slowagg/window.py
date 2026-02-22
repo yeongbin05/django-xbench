@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Dict, List, Tuple
-
+from .compat import dataclass_slots
 from .bucket import Bucket, DEFAULT_ENDPOINT_CAP
 from .stats import EndpointStats
 
 
-@dataclass(slots=True)
+dataclass_slots
 class RollingWindow:
     """
     Rolling time window using fixed-size buckets (ring buffer).
