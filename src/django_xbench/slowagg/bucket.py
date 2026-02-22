@@ -10,7 +10,7 @@ DEFAULT_ENDPOINT_CAP = 200
 OTHER_KEY = "__other__"
 
 
-dataclass_slots
+@dataclass_slots()
 class Bucket:
     """
     A single time bucket holding per-endpoint aggregated stats.

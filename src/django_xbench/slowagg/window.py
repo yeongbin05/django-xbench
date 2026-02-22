@@ -8,7 +8,7 @@ from .bucket import Bucket, DEFAULT_ENDPOINT_CAP
 from .stats import EndpointStats
 
 
-dataclass_slots
+@dataclass_slots()
 class RollingWindow:
     """
     Rolling time window using fixed-size buckets (ring buffer).
